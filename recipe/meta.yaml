@@ -1,4 +1,4 @@
-{% set version = "0.16.0" %}
+{% set version = "0.17.0" %}
 
 package:
   name: libcvcuda-split
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/CVCUDA/CV-CUDA/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: 49d74f5958d9ce613c12ed12019a4e69f547bb53ed61658e65a4b3972446661a
+  sha256: 9f1978e49f2c9245a1f2fd1866bbea17eba816240ee55e88626170dab1b44842
   patches:
     - patches/0001-fix-libdir.patch
     - patches/0002-use-dynamic-cuda-libs.patch
@@ -17,8 +17,8 @@ source:
     - patches/0007-exclude-cuosd-tests.patch
 
 build:
-  number: 1
-  skip: True  # [not linux or cuda_compiler_version == "None"]
+  number: 0
+  skip: true  # [not linux or cuda_compiler_version == "None"]
 
 requirements:
   build:
