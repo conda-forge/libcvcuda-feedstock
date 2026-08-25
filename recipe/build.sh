@@ -15,7 +15,7 @@ fi
 
 export CFLAGS="${CFLAGS:-} -w"
 export CXXFLAGS="${CXXFLAGS:-} -w"
-export CUDAFLAGS="${CUDAFLAGS:-} -w -Xcompiler=-w"
+export CUDAFLAGS="${CUDAFLAGS:-} -w -Xcompiler=-w -Xfatbin -compress-all"
 
 # CV-CUDA requires Volta (sm_70+); strip any pre-Volta archs from CUDAARCHS
 filtered_archs=""
