@@ -81,10 +81,9 @@ outputs:
         frameworks.
 
         This package is the runtime library only. Developers should install libcvcuda-dev instead.
-      license: Apache-2.0 and MIT
+      license: Apache-2.0
       license_file:
         - LICENSE.md
-        - THIRD_PARTY_LICENSES.md
       doc_url: https://cvcuda.github.io/CV-CUDA/
       dev_url: https://github.com/CVCUDA/CV-CUDA
 
@@ -147,10 +146,9 @@ outputs:
     about:
       home: https://github.com/CVCUDA/CV-CUDA
       summary: 'C++ system tests for CV-CUDA operators'
-      license: Apache-2.0 and MIT
+      license: Apache-2.0
       license_file:
         - LICENSE.md
-        - THIRD_PARTY_LICENSES.md
       doc_url: https://cvcuda.github.io/CV-CUDA/
       dev_url: https://github.com/CVCUDA/CV-CUDA
 
@@ -165,10 +163,9 @@ about:
     frameworks.
 
     This package provides the C/C++ shared libraries and their headers.
-  license: Apache-2.0 and MIT
+  license: Apache-2.0
   license_file:
     - LICENSE.md
-    - THIRD_PARTY_LICENSES.md
   doc_url: https://cvcuda.github.io/CV-CUDA/
   dev_url: https://github.com/CVCUDA/CV-CUDA
 
