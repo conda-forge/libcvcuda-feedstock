@@ -12,6 +12,7 @@ source:
     - patches/0002-use-dynamic-cuda-libs.patch
     - patches/0003-use-sysroot-libs-for-glibc-compat-stubs.patch
     - patches/0004-use-dynamic-zlib-in-tests.patch
+    - patches/0005-find-nvtx-in-host-prefix.patch
 
 build:
   number: 0
@@ -29,6 +30,7 @@ requirements:
   host:
     - cuda-version {{ cuda_compiler_version }}
     - cuda-cudart-dev
+    - cuda-nvtx-dev
     - libcublas-dev
     - libcurand-dev
     - libcusolver-dev

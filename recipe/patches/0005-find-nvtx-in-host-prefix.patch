@@ -1,0 +1,42 @@
+From 09e53265dd97bef4646eb7017d26ce807a3f65a0 Mon Sep 17 00:00:00 2001
+From: Daniel Ching <dching@nvidia.com>
+Date: Tue, 25 Aug 2026 17:13:42 -0500
+Subject: [PATCH] Search host prefix for nvtx3/nvToolsExt.h
+
+FindCUDAToolkit derives CUDAToolkit_INCLUDE_DIRS and CUDAToolkit_TARGET_DIR
+from the location of nvcc. In a conda-forge split build/host prefix, nvcc
+lives under the build prefix, but header-only packages installed as host
+requirements (e.g. cuda-nvtx-dev or nvtx-c) land under the host prefix
+instead, so the existing NO_DEFAULT_PATH find_path() never sees them.
+
+Add HINTS pointing at CMAKE_INSTALL_PREFIX (which packaging sets to the
+host prefix) so nvtx3/nvToolsExt.h can be located there too, regardless
+of whether it ships under targets/<arch>/include or a flat include/.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+---
+ CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c46156af..b492f5db 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -112,11 +112,14 @@ include(ConfigCUDA)
+ include(ConfigCCache)
+ 
+ add_library(cvcuda_nvtx_config INTERFACE)
++get_filename_component(CVCUDA_NVTX_TARGET_SUBDIR ${CUDAToolkit_TARGET_DIR} NAME)
+ find_path(CVCUDA_NVTX_INCLUDE_DIR
+     NAMES nvtx3/nvToolsExt.h
+     HINTS
+         ${CUDAToolkit_INCLUDE_DIRS}
+         ${CUDAToolkit_TARGET_DIR}/include
++        ${CMAKE_INSTALL_PREFIX}/targets/${CVCUDA_NVTX_TARGET_SUBDIR}/include
++        ${CMAKE_INSTALL_PREFIX}/include
+     NO_DEFAULT_PATH
+ )
+ if(NOT CVCUDA_NVTX_INCLUDE_DIR)
+-- 
+2.55.0
+
