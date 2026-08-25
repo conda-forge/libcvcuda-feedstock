@@ -1,5 +1,23 @@
+From 67528ff52ce061e8176a9c03f552eabcca5d0432 Mon Sep 17 00:00:00 2001
+From: Daniel Ching <dching@nvidia.com>
+Date: Tue, 25 Aug 2026 16:46:50 -0500
+Subject: [PATCH 2/3] Use dynamic CUDA libraries instead of static linking
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+---
+ python/common/CMakeLists.txt          | 2 +-
+ python/mod_cvcuda/CMakeLists.txt      | 2 +-
+ src/cvcuda/CMakeLists.txt             | 2 +-
+ src/cvcuda/priv/CMakeLists.txt        | 8 ++++----
+ src/cvcuda/priv/legacy/CMakeLists.txt | 2 +-
+ src/cvcuda/util/CMakeLists.txt        | 2 +-
+ src/nvcv/src/priv/CMakeLists.txt      | 2 +-
+ src/nvcv/util/CMakeLists.txt          | 2 +-
+ tests/CMakeLists.txt                  | 2 +-
+ 9 files changed, 12 insertions(+), 12 deletions(-)
+
 diff --git a/python/common/CMakeLists.txt b/python/common/CMakeLists.txt
-index 31db045..943552f 100644
+index 31db0459..943552f2 100644
 --- a/python/common/CMakeLists.txt
 +++ b/python/common/CMakeLists.txt
 @@ -33,6 +33,6 @@ target_link_libraries(cvcuda_python_common
@@ -11,11 +29,11 @@ index 31db045..943552f 100644
          pybind11::pybind11
  )
 diff --git a/python/mod_cvcuda/CMakeLists.txt b/python/mod_cvcuda/CMakeLists.txt
-index 5c15aa9..56113b5 100644
+index 1cd55170..850320f1 100644
 --- a/python/mod_cvcuda/CMakeLists.txt
 +++ b/python/mod_cvcuda/CMakeLists.txt
-@@ -149,7 +149,7 @@ target_include_directories(cvcuda_module_python
-
+@@ -165,7 +165,7 @@ target_include_directories(cvcuda_module_python
+ 
  target_link_libraries(cvcuda_module_python
      PRIVATE
 -        CUDA::cudart_static
@@ -24,11 +42,11 @@ index 5c15aa9..56113b5 100644
          nvcv_util_compat
          cvcuda
 diff --git a/src/cvcuda/CMakeLists.txt b/src/cvcuda/CMakeLists.txt
-index 64c6c3d..dcc382e 100644
+index 63ac0f90..f61ebeed 100644
 --- a/src/cvcuda/CMakeLists.txt
 +++ b/src/cvcuda/CMakeLists.txt
-@@ -99,7 +99,7 @@ add_library(cvcuda SHARED
-
+@@ -109,7 +109,7 @@ add_library(cvcuda SHARED
+ 
  target_link_libraries(cvcuda
      PUBLIC
 -        CUDA::cudart_static
@@ -37,10 +55,10 @@ index 64c6c3d..dcc382e 100644
          -lrt
      PRIVATE
 diff --git a/src/cvcuda/priv/CMakeLists.txt b/src/cvcuda/priv/CMakeLists.txt
-index deac31c..26233db 100644
+index 84ab86bd..5ff7c020 100644
 --- a/src/cvcuda/priv/CMakeLists.txt
 +++ b/src/cvcuda/priv/CMakeLists.txt
-@@ -102,9 +102,9 @@ target_link_libraries(cvcuda_priv
+@@ -146,10 +146,10 @@ target_link_libraries(cvcuda_priv
          cvcuda_headers
          nvcv_util_sanitizer
          cvcuda_legacy
@@ -54,12 +72,13 @@ index deac31c..26233db 100644
 +        CUDA::cublasLt
          -lrt
  )
+ 
 diff --git a/src/cvcuda/priv/legacy/CMakeLists.txt b/src/cvcuda/priv/legacy/CMakeLists.txt
-index 4a265c8..1dccd25 100644
+index 87629959..68f43fb0 100644
 --- a/src/cvcuda/priv/legacy/CMakeLists.txt
 +++ b/src/cvcuda/priv/legacy/CMakeLists.txt
-@@ -110,7 +110,7 @@ add_library(cvcuda_legacy STATIC
-
+@@ -147,7 +147,7 @@ add_library(cvcuda_legacy STATIC
+ 
  target_link_libraries(cvcuda_legacy
      PUBLIC
 -        CUDA::cudart_static
@@ -68,7 +87,7 @@ index 4a265c8..1dccd25 100644
          nvcv_util
          cvcuda_headers
 diff --git a/src/cvcuda/util/CMakeLists.txt b/src/cvcuda/util/CMakeLists.txt
-index 346ab73..dad2b17 100644
+index 346ab73b..dad2b179 100644
 --- a/src/cvcuda/util/CMakeLists.txt
 +++ b/src/cvcuda/util/CMakeLists.txt
 @@ -24,6 +24,6 @@ add_library(cvcuda_util STATIC
@@ -80,7 +99,7 @@ index 346ab73..dad2b17 100644
          -lrt
  )
 diff --git a/src/nvcv/src/priv/CMakeLists.txt b/src/nvcv/src/priv/CMakeLists.txt
-index 7e298d9..98c6ce0 100644
+index 7e298d9a..98c6ce08 100644
 --- a/src/nvcv/src/priv/CMakeLists.txt
 +++ b/src/nvcv/src/priv/CMakeLists.txt
 @@ -52,7 +52,7 @@ target_link_libraries(nvcv_types_priv
@@ -90,10 +109,10 @@ index 7e298d9..98c6ce0 100644
 -        CUDA::cudart_static
 +        CUDA::cudart
  )
-
+ 
  if(NOT PLATFORM_IS_QNX)
 diff --git a/src/nvcv/util/CMakeLists.txt b/src/nvcv/util/CMakeLists.txt
-index aa72802..81d4af5 100644
+index aa72802b..81d4af52 100644
 --- a/src/nvcv/util/CMakeLists.txt
 +++ b/src/nvcv/util/CMakeLists.txt
 @@ -192,7 +192,7 @@ target_link_libraries(nvcv_util
@@ -104,12 +123,12 @@ index aa72802..81d4af5 100644
 +        CUDA::cudart
          nvcv_util_compat
  )
-
+ 
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index ea0e91d..53eebd3 100644
+index 40d36de1..3abe96e9 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
-@@ -36,7 +36,7 @@ target_link_libraries(nvcv_test_main
+@@ -41,7 +41,7 @@ target_link_libraries(nvcv_test_main
          nvcv_util_compat
      PRIVATE
          nvcv_types
@@ -117,4 +136,7 @@ index ea0e91d..53eebd3 100644
 +        CUDA::cudart
          -lrt
  )
+ 
+-- 
+2.55.0
 

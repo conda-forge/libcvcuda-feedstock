@@ -11,10 +11,7 @@ source:
     - patches/0001-fix-libdir.patch
     - patches/0002-use-dynamic-cuda-libs.patch
     - patches/0003-use-sysroot-libs-for-glibc-compat-stubs.patch
-    - patches/0004-use-system-gtest.patch
-    - patches/0005-use-dynamic-openssl-zlib-in-tests.patch
-    - patches/0006-find-gtest-in-tests.patch
-    - patches/0007-exclude-cuosd-tests.patch
+    - patches/0004-use-dynamic-zlib-in-tests.patch
 
 build:
   number: 0

@@ -1,0 +1,33 @@
+From 1dd1266091d9359b77e3b87eaec8922ed5140d71 Mon Sep 17 00:00:00 2001
+From: Daniel Ching <dching@nvidia.com>
+Date: Tue, 25 Aug 2026 16:56:31 -0500
+Subject: [PATCH] Make ZLIB static linking in tests an overridable option
+
+conda-forge's zlib package ships shared libraries only. The hardcoded
+set(ZLIB_USE_STATIC_LIBS TRUE) shadows any -DZLIB_USE_STATIC_LIBS
+passed on the CMake command line, since a directory-scoped set() takes
+precedence over the same-named cache variable. Turn it into an
+option(), mirroring OPENSSL_USE_STATIC_LIBS above, so downstream
+packagers can select dynamic ZLIB via -DZLIB_USE_STATIC_LIBS=OFF.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+---
+ tests/common/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/common/CMakeLists.txt b/tests/common/CMakeLists.txt
+index 50a23cee..fa804fc2 100644
+--- a/tests/common/CMakeLists.txt
++++ b/tests/common/CMakeLists.txt
+@@ -22,7 +22,7 @@ find_package(OpenSSL COMPONENTS Crypto REQUIRED)
+ 
+ # on some distros (e.g CentOS 7) we need to add libz when
+ # linking against static libcrypto
+-set(ZLIB_USE_STATIC_LIBS TRUE)
++option(ZLIB_USE_STATIC_LIBS "Link the test ZLIB dependency statically" ON)
+ find_package(ZLIB REQUIRED)
+ 
+ add_library(nvcv_test_common STATIC
+-- 
+2.55.0
+
