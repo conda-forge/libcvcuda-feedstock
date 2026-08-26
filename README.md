@@ -9,7 +9,7 @@ About libcvcuda
 
 Home: https://github.com/CVCUDA/CV-CUDA
 
-Package license: Apache-2.0 and MIT
+Package license: Apache-2.0
 
 Summary: An open-source, GPU accelerated library for cloud-scale image processing and computer vision
 
@@ -31,7 +31,7 @@ About libcvcuda
 
 Home: https://github.com/CVCUDA/CV-CUDA
 
-Package license: Apache-2.0 and MIT
+Package license: Apache-2.0
 
 Summary: An open-source, GPU accelerated library for cloud-scale image processing and computer vision
 
@@ -53,7 +53,7 @@ About libcvcuda-tests
 
 Home: https://github.com/CVCUDA/CV-CUDA
 
-Package license: Apache-2.0 and MIT
+Package license: Apache-2.0
 
 Summary: C++ system tests for CV-CUDA operators
 
