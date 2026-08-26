@@ -1,6 +1,8 @@
-From: conda-forge <conda-forge@example.com>
-Date: Tue, 08 Apr 2025 00:00:00 +0000
-Subject: [PATCH] Use sysroot libraries instead of LFS-tracked stub binaries
+From 989c43b76f1d8d4fef54785399d855b97c86ad0c Mon Sep 17 00:00:00 2001
+From: Daniel Ching <dching@nvidia.com>
+Date: Tue, 25 Aug 2026 16:46:54 -0500
+Subject: [PATCH 3/3] Use sysroot libraries instead of LFS-tracked stub
+ binaries
 
 The pre-built stub .so files in src/nvcv/util/stubs/ are tracked via
 Git LFS. GitHub source tarballs do not include LFS content, so the files
@@ -9,18 +11,20 @@ arrive as text pointer files that the linker cannot process.
 Replace the hardcoded stub paths with find_library() calls so that CMake
 locates the equivalent libraries from the conda build sysroot, which
 already matches the target __glibc version.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
 ---
- src/nvcv/util/CMakeLists.txt | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ src/nvcv/util/CMakeLists.txt | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/src/nvcv/util/CMakeLists.txt b/src/nvcv/util/CMakeLists.txt
-index aa72802..bb93c12 100644
+index 81d4af52..86c77ade 100644
 --- a/src/nvcv/util/CMakeLists.txt
 +++ b/src/nvcv/util/CMakeLists.txt
-@@ -141,6 +141,10 @@
+@@ -141,6 +141,10 @@ if(ENABLE_COMPAT_OLD_GLIBC)
      # Moreover using the normal linker on Ubuntu 18.04 results in
      # linking errors.
-
+ 
 +    find_library(LIBDL_STUB dl REQUIRED)
 +    find_library(LIBRT_STUB rt REQUIRED)
 +    find_library(LIBPTHREAD_STUB pthread REQUIRED)
@@ -28,7 +32,7 @@ index aa72802..bb93c12 100644
      target_link_options(nvcv_util_compat
          PUBLIC
              -static-libstdc++
-@@ -149,9 +153,9 @@
+@@ -149,9 +153,9 @@ if(ENABLE_COMPAT_OLD_GLIBC)
              -Wl,-u__cxa_thread_atexit_impl
              ${linkcompat}
              -Wl,--push-state,--no-as-needed
@@ -40,3 +44,7 @@ index aa72802..bb93c12 100644
 +            ${LIBPTHREAD_STUB}
              -Wl,--pop-state
      )
+ else()
+-- 
+2.55.0
+

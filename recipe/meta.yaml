@@ -1,4 +1,4 @@
-{% set version = "0.16.0" %}
+{% set version = "0.17.0" %}
 
 package:
   name: libcvcuda-split
@@ -6,19 +6,17 @@ package:
 
 source:
   url: https://github.com/CVCUDA/CV-CUDA/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: 49d74f5958d9ce613c12ed12019a4e69f547bb53ed61658e65a4b3972446661a
+  sha256: 9f1978e49f2c9245a1f2fd1866bbea17eba816240ee55e88626170dab1b44842
   patches:
     - patches/0001-fix-libdir.patch
     - patches/0002-use-dynamic-cuda-libs.patch
     - patches/0003-use-sysroot-libs-for-glibc-compat-stubs.patch
-    - patches/0004-use-system-gtest.patch
-    - patches/0005-use-dynamic-openssl-zlib-in-tests.patch
-    - patches/0006-find-gtest-in-tests.patch
-    - patches/0007-exclude-cuosd-tests.patch
+    - patches/0004-use-dynamic-zlib-in-tests.patch
+    - patches/0005-find-nvtx-in-host-prefix.patch
 
 build:
-  number: 1
-  skip: True  # [not linux or cuda_compiler_version == "None"]
+  number: 0
+  skip: true  # [not linux or cuda_compiler_version == "None"]
 
 requirements:
   build:
@@ -32,6 +30,7 @@ requirements:
   host:
     - cuda-version {{ cuda_compiler_version }}
     - cuda-cudart-dev
+    - cuda-nvtx-dev
     - libcublas-dev
     - libcurand-dev
     - libcusolver-dev
@@ -82,10 +81,9 @@ outputs:
         frameworks.
 
         This package is the runtime library only. Developers should install libcvcuda-dev instead.
-      license: Apache-2.0 and MIT
+      license: Apache-2.0
       license_file:
         - LICENSE.md
-        - THIRD_PARTY_LICENSES.md
       doc_url: https://cvcuda.github.io/CV-CUDA/
       dev_url: https://github.com/CVCUDA/CV-CUDA
 
@@ -115,6 +113,10 @@ outputs:
   - name: libcvcuda-tests
     build:
       string: cuda{{ cuda_compiler_version | replace('.', '') }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+      # conda-forge's aarch64 g++ 14.1.0-14.4.0 crashes on GoogleTest's parameterized-test
+      # templates, so tests aren't built on aarch64 with cxx_compiler_version 14. See
+      # https://github.com/conda-forge/ctng-compilers-feedstock (bug filed upstream).
+      skip: true  # [aarch64 and cxx_compiler_version == 14]
       ignore_run_exports:
         - cuda-version
       ignore_run_exports_from:
@@ -148,10 +150,9 @@ outputs:
     about:
       home: https://github.com/CVCUDA/CV-CUDA
       summary: 'C++ system tests for CV-CUDA operators'
-      license: Apache-2.0 and MIT
+      license: Apache-2.0
       license_file:
         - LICENSE.md
-        - THIRD_PARTY_LICENSES.md
       doc_url: https://cvcuda.github.io/CV-CUDA/
       dev_url: https://github.com/CVCUDA/CV-CUDA
 
@@ -166,10 +167,9 @@ about:
     frameworks.
 
     This package provides the C/C++ shared libraries and their headers.
-  license: Apache-2.0 and MIT
+  license: Apache-2.0
   license_file:
     - LICENSE.md
-    - THIRD_PARTY_LICENSES.md
   doc_url: https://cvcuda.github.io/CV-CUDA/
   dev_url: https://github.com/CVCUDA/CV-CUDA
 
