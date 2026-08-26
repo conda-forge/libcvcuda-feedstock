@@ -113,6 +113,10 @@ outputs:
   - name: libcvcuda-tests
     build:
       string: cuda{{ cuda_compiler_version | replace('.', '') }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+      # conda-forge's aarch64 g++ 14.1.0-14.4.0 crashes on GoogleTest's parameterized-test
+      # templates, so tests aren't built on aarch64 with cxx_compiler_version 14. See
+      # https://github.com/conda-forge/ctng-compilers-feedstock (bug filed upstream).
+      skip: true  # [aarch64 and cxx_compiler_version == "14"]
       ignore_run_exports:
         - cuda-version
       ignore_run_exports_from:

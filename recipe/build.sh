@@ -17,6 +17,16 @@ export CFLAGS="${CFLAGS:-} -w"
 export CXXFLAGS="${CXXFLAGS:-} -w"
 export CUDAFLAGS="${CUDAFLAGS:-} -w -Xcompiler=-w -Xfatbin -compress-all"
 
+# conda-forge's aarch64-conda-linux-gnu g++ 14.1.0-14.4.0 crashes on GoogleTest's
+# parameterized-test templates ([[nodiscard]] base class downcast in gtest-param-util.h), so
+# tests can't be built on aarch64 with cxx_compiler_version 14. GCC 15 (used for the CUDA
+# 13.0 aarch64 variant) is unaffected. See
+# https://github.com/conda-forge/ctng-compilers-feedstock (bug filed upstream).
+BUILD_TESTS=ON
+if [ "${target_platform}" = "linux-aarch64" ] && [ "${cxx_compiler_version}" = "14" ]; then
+    BUILD_TESTS=OFF
+fi
+
 # CV-CUDA requires Volta (sm_70+); strip any pre-Volta archs from CUDAARCHS
 filtered_archs=""
 IFS=';' read -ra _archs <<< "${CUDAARCHS}"
@@ -34,8 +44,8 @@ cmake ${CMAKE_ARGS} "${SRC_DIR}" \
     -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTS=ON \
-    -DBUILD_TESTS_CPP=ON \
+    -DBUILD_TESTS=${BUILD_TESTS} \
+    -DBUILD_TESTS_CPP=${BUILD_TESTS} \
     -DBUILD_TESTS_PYTHON=OFF \
     -DBUILD_TESTS_WHEELS=OFF \
     -DOPENSSL_USE_STATIC_LIBS=OFF \
