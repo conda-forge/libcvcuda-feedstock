@@ -27,6 +27,7 @@ requirements:
     - arm-variant * {{ arm_variant_type }}  # [linux and aarch64 and cuda_compiler_version != "None"]
     - cmake >=3.20.1
     - ninja
+    - cf-nvidia-tools >=1.1,<2  # [linux]
   host:
     - cuda-version {{ cuda_compiler_version }}
     - cuda-cudart-dev
@@ -58,6 +59,7 @@ outputs:
         - arm-variant * {{ arm_variant_type }}  # [linux and aarch64 and cuda_compiler_version != "None"]
         - cmake >=3.20.1
       host:
+        - cuda-arch {{ cuda_arch_version }}
         - cuda-version {{ cuda_compiler_version }}
         - cuda-cudart-dev
         - libcusolver-dev
