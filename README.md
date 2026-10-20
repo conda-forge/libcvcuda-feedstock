@@ -23,11 +23,10 @@ processing for AI pipelines across NVIDIA cloud, desktop, and edge platforms. CV
 built for performance and works seamlessly with C/C++ and Python Image and AI
 frameworks.
 
-This package provides the C/C++ shared libraries and their headers.
+This package is the runtime library only. Developers should install libcvcuda-dev instead.
 
-
-About libcvcuda
----------------
+About libcvcuda-dev
+-------------------
 
 Home: https://github.com/CVCUDA/CV-CUDA
 
@@ -45,8 +44,7 @@ processing for AI pipelines across NVIDIA cloud, desktop, and edge platforms. CV
 built for performance and works seamlessly with C/C++ and Python Image and AI
 frameworks.
 
-This package is the runtime library only. Developers should install libcvcuda-dev instead.
-
+This package provides the C/C++ shared libraries and their headers.
 
 About libcvcuda-tests
 ---------------------
@@ -60,6 +58,14 @@ Summary: C++ system tests for CV-CUDA operators
 Development: https://github.com/CVCUDA/CV-CUDA
 
 Documentation: https://cvcuda.github.io/CV-CUDA/
+
+CV-CUDA is an open-source library of GPU-accelerated computer vision algorithms designed
+for speed and scalability. It delivers high-throughput, low-latency image/video
+processing for AI pipelines across NVIDIA cloud, desktop, and edge platforms. CV-CUDA is
+built for performance and works seamlessly with C/C++ and Python Image and AI
+frameworks.
+
+This package provides the C/C++ shared libraries and their headers.
 
 Current build status
 ====================

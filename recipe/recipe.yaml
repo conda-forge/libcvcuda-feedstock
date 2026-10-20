@@ -1,0 +1,226 @@
+schema_version: 1
+
+context:
+  version: "0.19.0"
+  build_number: 0
+  cuda_build_string: cuda${{ cuda_compiler_version | version_to_buildstring }}
+  # ensure arm_variant_type gets detected as a used variable
+  touch_arm_variant_type: ${{ arm_variant_type if aarch64 else "" }}
+
+recipe:
+  name: libcvcuda-split
+  version: ${{ version }}
+
+source:
+  url: https://github.com/CVCUDA/CV-CUDA/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 8659124529341bdffeb11d88c2ed189a68d5817dd3f77a35248824dd29bd2fed
+  patches:
+    - patches/0001-fix-libdir.patch
+    - patches/0002-use-dynamic-cuda-libs.patch
+    - patches/0003-use-sysroot-libs-for-glibc-compat-stubs.patch
+    - patches/0004-use-dynamic-zlib-in-tests.patch
+    - patches/0005-find-nvtx-in-host-prefix.patch
+
+build:
+  number: ${{ build_number }}
+  skip:
+    - not linux
+    - cuda_compiler_version == "None"
+    # sbsa builds target the minimum arch (7.5); tegra builds target Orin (sm_87)
+    - aarch64 and ((arm_variant_type == "tegra") != (cuda_arch_version == "8.7"))
+
+outputs:
+  # Build once; the package outputs below install their own component from this build tree
+  - staging:
+      name: libcvcuda-split
+    build:
+      script:
+        file: build.sh
+        env:
+          c_stdlib_version: ${{ c_stdlib_version }}
+          cxx_compiler_version: ${{ cxx_compiler_version }}
+          cuda_arch_version: ${{ cuda_arch_version }}
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ compiler('cuda') }}
+        - ${{ stdlib('c') }}
+        - if: aarch64
+          then: arm-variant * ${{ arm_variant_type }}
+        - cmake >=3.20.1
+        - ninja
+        - cf-nvidia-tools >=1.1,<2
+      host:
+        - cuda-version ${{ cuda_compiler_version }}.*
+        - cuda-cudart-dev
+        - cuda-nvtx-dev
+        - libcublas-dev
+        - libcurand-dev
+        - libcusolver-dev
+        - gtest
+        - openssl
+        - zlib
+
+  - package:
+      name: libcvcuda
+    inherit:
+      from: libcvcuda-split
+      run_exports: false
+    build:
+      string: ${{ cuda_build_string }}_h${{ hash }}_${{ build_number }}
+      script: install_lib.sh
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ compiler('cuda') }}
+        - ${{ stdlib('c') }}
+        - if: aarch64
+          then: arm-variant * ${{ arm_variant_type }}
+        - cmake >=3.20.1
+      host:
+        - cuda-arch ${{ cuda_arch_version }}.*
+        - cuda-version ${{ cuda_compiler_version }}.*
+        - cuda-cudart-dev
+        - libcusolver-dev
+      run:
+        - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
+        - cuda-version >=12.2
+        - cuda-cudart
+        - libcusolver
+      ignore_run_exports:
+        by_name:
+          - cuda-version
+          - libstdcxx
+        from_package:
+          - cuda-cudart-dev
+          - libcusolver-dev
+    tests:
+      - package_contents:
+          files:
+            - lib/libcvcuda.so.0
+            - lib/libnvcv_types.so.0
+    about:
+      homepage: https://github.com/CVCUDA/CV-CUDA
+      summary: An open-source, GPU accelerated library for cloud-scale image processing and computer vision
+      description: |
+        CV-CUDA is an open-source library of GPU-accelerated computer vision algorithms designed
+        for speed and scalability. It delivers high-throughput, low-latency image/video
+        processing for AI pipelines across NVIDIA cloud, desktop, and edge platforms. CV-CUDA is
+        built for performance and works seamlessly with C/C++ and Python Image and AI
+        frameworks.
+
+        This package is the runtime library only. Developers should install libcvcuda-dev instead.
+      license: Apache-2.0
+      license_file:
+        - LICENSE.md
+      documentation: https://cvcuda.github.io/CV-CUDA/
+      repository: https://github.com/CVCUDA/CV-CUDA
+
+  - package:
+      name: libcvcuda-dev
+    inherit:
+      from: libcvcuda-split
+      run_exports: false
+    build:
+      string: ${{ cuda_build_string }}_h${{ hash }}_${{ build_number }}
+      script: install_dev.sh
+    requirements:
+      build:
+        - if: aarch64
+          then: arm-variant * ${{ arm_variant_type }}
+        - cmake >=3.20.1
+      host:
+        - cuda-version ${{ cuda_compiler_version }}.*
+      run:
+        - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
+        - ${{ pin_subpackage("libcvcuda", exact=True) }}
+      run_exports:
+        - ${{ pin_subpackage("libcvcuda", upper_bound="x.x") }}
+      ignore_run_exports:
+        by_name:
+          - cuda-version
+    tests:
+      - package_contents:
+          files:
+            - include/cvcuda/IOperator.hpp
+            - include/nvcv/Version.h
+            - lib/cmake/cvcuda/cvcuda-config.cmake
+
+  - package:
+      name: libcvcuda-tests
+    inherit:
+      from: libcvcuda-split
+      run_exports: false
+    build:
+      string: ${{ cuda_build_string }}_h${{ hash }}_${{ build_number }}
+      script: install_tests.sh
+      # conda-forge's aarch64 g++ 14.1.0-14.4.0 crashes on GoogleTest's parameterized-test
+      # templates, so tests aren't built on aarch64 with cxx_compiler_version 14. See
+      # https://github.com/conda-forge/ctng-compilers-feedstock (bug filed upstream).
+      skip:
+        - aarch64 and cxx_compiler_version == "14"
+      dynamic_linking:
+        missing_dso_allowlist:
+          - "**/libcuda.so*"
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ compiler('cuda') }}
+        - ${{ stdlib('c') }}
+        - if: aarch64
+          then: arm-variant * ${{ arm_variant_type }}
+        - cmake >=3.20.1
+      host:
+        - cuda-version ${{ cuda_compiler_version }}.*
+        - cuda-cudart-dev
+        - ${{ pin_subpackage("libcvcuda", exact=True) }}
+        - gtest
+        - openssl
+      run:
+        - ${{ pin_compatible("cuda-version", lower_bound="x", upper_bound="x") }}
+        - ${{ pin_subpackage("libcvcuda", exact=True) }}
+        - cuda-cudart
+      ignore_run_exports:
+        by_name:
+          - cuda-version
+        from_package:
+          - cuda-cudart-dev
+    tests:
+      - package_contents:
+          files:
+            - bin/cvcuda_test_system
+            - bin/cvcuda_test_system_smoke
+            - bin/run_libcvcuda_tests.sh
+    about:
+      homepage: https://github.com/CVCUDA/CV-CUDA
+      summary: C++ system tests for CV-CUDA operators
+      license: Apache-2.0
+      license_file:
+        - LICENSE.md
+      documentation: https://cvcuda.github.io/CV-CUDA/
+      repository: https://github.com/CVCUDA/CV-CUDA
+
+about:
+  homepage: https://github.com/CVCUDA/CV-CUDA
+  summary: An open-source, GPU accelerated library for cloud-scale image processing and computer vision
+  description: |
+    CV-CUDA is an open-source library of GPU-accelerated computer vision algorithms designed
+    for speed and scalability. It delivers high-throughput, low-latency image/video
+    processing for AI pipelines across NVIDIA cloud, desktop, and edge platforms. CV-CUDA is
+    built for performance and works seamlessly with C/C++ and Python Image and AI
+    frameworks.
+
+    This package provides the C/C++ shared libraries and their headers.
+  license: Apache-2.0
+  license_file:
+    - LICENSE.md
+  documentation: https://cvcuda.github.io/CV-CUDA/
+  repository: https://github.com/CVCUDA/CV-CUDA
+
+extra:
+  feedstock-name: libcvcuda
+  recipe-maintainers:
+    - conda-forge/cuda

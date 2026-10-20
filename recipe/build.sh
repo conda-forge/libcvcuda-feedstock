@@ -29,7 +29,7 @@ fi
 
 # CV-CUDA requires Turing (sm_75+); strip any pre-Turing archs from CUDAARCHS
 # See the compatibility table: https://github.com/CVCUDA/CV-CUDA/blob/v0.19.0/README.md#compatibility
-export CUDAARCHS="$(trim-cuda-archs CUDAARCHS)"
+export CUDAARCHS="$(trim-cuda-archs CUDAARCHS ${cuda_arch_version})"
 
 # We must explicitly set CMAKE_CUDA_ARCHITECTURES because otherwise,
 # cvcuda will append its own archs
