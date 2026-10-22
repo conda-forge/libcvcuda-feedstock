@@ -27,16 +27,9 @@ if [ "${target_platform}" = "linux-aarch64" ] && [ "${cxx_compiler_version}" = "
     BUILD_TESTS=OFF
 fi
 
-# CV-CUDA requires Volta (sm_70+); strip any pre-Volta archs from CUDAARCHS
-filtered_archs=""
-IFS=';' read -ra _archs <<< "${CUDAARCHS}"
-for _arch in "${_archs[@]}"; do
-    _num="${_arch%%[^0-9]*}"
-    if [ "${_num}" -ge 70 ]; then
-        filtered_archs="${filtered_archs:+${filtered_archs};}${_arch}"
-    fi
-done
-export CUDAARCHS="${filtered_archs}"
+# CV-CUDA requires Turing (sm_75+); strip any pre-Turing archs from CUDAARCHS
+# See the compatibility table: https://github.com/CVCUDA/CV-CUDA/blob/v0.19.0/README.md#compatibility
+export CUDAARCHS="$(trim-cuda-archs CUDAARCHS ${cuda_arch_version})"
 
 # We must explicitly set CMAKE_CUDA_ARCHITECTURES because otherwise,
 # cvcuda will append its own archs
